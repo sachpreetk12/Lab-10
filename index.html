@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab-8</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <header></header>
+    <section></section>
+    <footer></footer>
+    <div class="app-wrap">
+        <p id="loc"></p>
+        <div>
+            <button type="button" id="search">Get My Location Weather Info!!</button>
+        </div>
+        <div>
+            <section class="location">
+                <div class="lati-loni">Latitude/Longitude</div>
+                <div class="feelsLike">FeelsLike</div>
+                <div class="timezone">TimeZone</div>
+            </section>
+            <div class="current">
+                <div class="temp">18<span>°c</span></div>
+                <div class="weather">Sunny</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let header = document.querySelector('header');
+        let section = document.querySelector('section');
+
+        let URLrequest = 'https://sachpreetk12.github.io/Lab-8/products.json';
+
+        let req = new XMLHttpRequest();
+
+        req.open('GET', URLrequest);
+
+        req.responseType = 'json';
+
+        req.send();
+
+        req.onload = function () {
+            let iScream = req.response;
+            console.log(iScream);
+            productsInfo(iScream);
+            topDeals(iScream);
+        }
+
+        function productsInfo(jsonParm) {
+            let header1 = document.createElement('h1');
+            header1.textContent = jsonParm['companyName'];
+            header.appendChild(header1);
+            let headPara = document.createElement('p');
+            headPara.textContent = jsonParm['headOffice'];
+            header.appendChild(headPara);
+        }
+
+        function topDeals(jsonParm) {
+            let topDeals = jsonParm['topDeals'];
+            for (let a = 0; a < topDeals.length; a++) {
+                let article = document.createElement('article');
+                let header2 = document.createElement('h2');
+                let img = document.createElement('img');
+                let para1 = document.createElement('p');
+                let para2 = document.createElement('p');
+                let list = document.createElement('li');
+
+                img.setAttribute('src', 'images/' + topDeals[a]['image']);
+                img.setAttribute('alt', topDeals[a].name);
+                header2.textContent = topDeals[a].name;
+                para1.textContent = topDeals[a].price;
+                para2.textContent = topDeals[a].description;
+
+                let features = topDeals[a].features;
+                for (let b = 0; b < features.length; b++) {
+                    let listItems = document.createElement('li');
+                    listItems.textContent = features[b];
+                    list.appendChild(listItems);
+                }
+
+                article.appendChild(header2);
+                article.appendChild(img);
+                article.appendChild(para2);
+                article.appendChild(para1);
+                article.appendChild(list);
+                section.appendChild(article);
+            }
+        }
+
+        // Weather API integrated with user's geolocation 
+
+        let p = document.getElementById("loc");
+        function getCurrentLocationPermission(){
+        if(!navigator.geolocation){
+          p.textContent = "Not Supported!!";
+        }else{
+          p.textContent = "Locating...";
+          navigator.geolocation.getCurrentPosition(getCurrentLatiLong, error);
+        }
+      }
+
+      function getCurrentLatiLong(show){
+        const latitude = show.coords.latitude;
+        const longitude = show.coords.longitude;
+        fetchResults(latitude,longitude);
+      }
+
+      function error() {
+        para.textContent = "Sorry, something went wrong!";
+      }
+
+const searchbox = document.querySelector('.search-box');
+//Selecting city from location div
+let timeZone = document.querySelector('.location .timezone');
+let latiLoni = document.querySelector('.location .lati-loni');
+let feelsLike = document.querySelector('.location .feelsLike');
+//Selecting weather from current div element 
+let weatherElement = document.querySelector('.current .weather');
+//Selecting temperature from current div element 
+let temp = document.querySelector('.current .temp');
+//Selecting high and low temperature
+let hilow = document.querySelector('.hi-low');
+//Selecting search button
+let searchButton = document.getElementById("search");
+//Adding eventlistener to search button
+searchButton.addEventListener('click', getCurrentLocationPermission);
+
+
+
+//Function that gets weather data from openweathermap (https://openweathermap.org/api) site
+function fetchResults(lat,lon) {
+    fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&
+exclude=minutely&units=metric&appid=14523f43734ec7c91d0223953ae0fd1b`)
+        .then(weather => weather.json())
+        .then(data => {
+            console.log(data)
+            latiLoni.innerHTML = `<span>Latitude/Longitude - </span>${data.lat} / ${data.lon}`;
+            feelsLike.innerHTML = `<span>Feels Like - </span> ${Math.round(data.current.feels_like)}<span>°c</span>`;
+            timeZone.innerHTML = `<span>TimeZone - </span>${data.timezone}`;
+            temp.innerHTML = `<span>Temperature - </span>${Math.round(data.current.temp)}<span>°c</span>`;
+            weatherElement.innerHTML = `<span>Weather Type - </span>${data.current.weather[0].main}`;
+        });
+}
+
+    </script>
+</body>
+
+</html>
